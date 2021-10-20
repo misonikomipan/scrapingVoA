@@ -2,9 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import markdown
 import pdfkit
+from path import path_wkhtmltopdf, outDIR
 
-path_wkthmltopdf = b'C:\Program Files\wkhtmltopdf\\bin\wkhtmltopdf.exe'
-outDIR = "C:/Users/misonikomipan/Documents/VoA/"
+# 上記モジュールのインストールとは別にwkhtmltopdfをインストールする必要があります
+# wkhtmltopdfインストール後，pathを通し，path.pyのpath_wkhtmltopdfに文字列として格納してください
+
 URL = "https://learningenglish.voanews.com/"
 genre = {
     "health": "z/955",
@@ -53,6 +55,10 @@ for g in genre:
         print("title:", titleText)
         print("")
 
+        # ファイル名に使用できない文字は除去
+        titleText = titleText.replace(':', ' ').replace('\\', ' ').replace('>', ' ').replace(
+            '<', ' ').replace('?', ' ').replace('"', ' ').replace('|', ' ').replace('/', ' ')
+
         # 本文の取得
         body = soup.find('div', {'class': 'wsw'})
 
@@ -71,6 +77,8 @@ for g in genre:
                 vocabStart = index
         manuscript = pElements[manuStart + 1:manuEnd + 1]
         manuscript = " ".join(manuscript)
+        manuscript = manuscript.replace('.”', '”.')
+        manuscript = manuscript.replace('."', '".')
         vocab = pElements[vocabStart:]
 
         # 本文を文ごとに区切る
@@ -91,6 +99,7 @@ for g in genre:
         manuscript = ""
         for sentence in sentences:
             manuscript += "* " + sentence + "." + "\n"
+            manuscript += "* " + "\n"
         text = title + manuscript
 
         md = markdown.Markdown()
@@ -105,5 +114,6 @@ for g in genre:
         if "?" in outPath:
             outPath = outPath[:-6] + outPath[-4:]
         print(outPath)
-        config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
-        pdfkit.from_string(html, outPath, configuration=config, options=options)
+        config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+        pdfkit.from_string(
+            html, outPath, configuration=config, options=options)
